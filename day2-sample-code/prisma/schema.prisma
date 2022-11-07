@@ -25,6 +25,7 @@ model Book {
 
   authorId    Int
   author      Author    @relation("AuthorBooks", fields: [authorId], references: [id])
+  genres      BookGenre[] @relation("BookBookGenre")
 }
 // createdAt and updatedAt usually used for filtering,
 // so always add the attributes as a habit
@@ -39,4 +40,23 @@ model Author {
   lastName    String
 
   books       Book[]    @relation("AuthorBooks")
+}
+
+model Genre {
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  title       String
+  books       BookGenre[] @relation("GenreBookGenre") 
+}
+
+model BookGenre {
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  bookId      Int
+  book        Book      @relation("BookBookGenre", fields: [bookId], references: [id])
+  genreId     Int
+  genre       Genre     @relation("GenreBookGenre", fields: [genreId], references: [id])
+  @@id([bookId, genreId])
 }

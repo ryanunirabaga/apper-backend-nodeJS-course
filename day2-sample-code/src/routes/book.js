@@ -50,6 +50,27 @@ booksRouter.get("/books/:bookId/author", async (request, response) => {
     });
 })
 
+booksRouter.get("/books/:bookId/genres", async (request, response) => {
+    const bookId = request.params.bookId;
+    const book = await request.app.locals.prisma.book.findUnique({
+        where: {
+            id: Number.parseInt(bookId),
+        },
+        include: {
+            genres: {
+                include: {
+                    genre: true
+                } 
+            },
+        },
+    })
+    const genres = book.genres.map(({ genre }) => genre);
+    response.send({ 
+        data: genres,
+        message: book ? 'ok': 'not found'
+    });
+})
+
 booksRouter.post(
     "/books",
     [
@@ -78,6 +99,19 @@ booksRouter.post(
         "website",
         "authorId"
     ])
+
+    if (request.body.genreIds) {
+        const genres = request.body.genreIds.map((genreId) => ({
+          genre: {
+            connect: {
+              id: Number.parseInt(genreId),
+            },
+          },
+        }));
+        filteredBody.genres = {
+          create: genres,
+        };
+      }
 
     const book = await request.app.locals.prisma.book.create({
         data: filteredBody,
