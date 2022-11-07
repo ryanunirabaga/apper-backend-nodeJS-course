@@ -41,7 +41,7 @@ booksRouter.get("/books/:bookId/author", async (request, response) => {
         },
     })
     if(!book) {
-        response.send({ data: book, message:'not found'});
+        response.send({ data: book, message:'resource not found'});
         return;
     }
     response.send({ 
