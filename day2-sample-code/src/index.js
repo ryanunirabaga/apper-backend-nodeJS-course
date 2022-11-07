@@ -1,0 +1,19 @@
+import express from 'express'
+import { PrismaClient } from '@prisma/client';
+import booksRouter from './routes/book.js';
+
+const app = express();
+const prisma = new PrismaClient();
+app.use(express.json())
+
+app.locals.prisma = prisma;
+
+const PORT = 3000;
+app.use(booksRouter);
+
+app.get("/",(request, response) => {
+    response.send({message: 'hello, world'});
+});
+
+
+app.listen(PORT, () => console.log(`listening on PORT ${PORT}`));

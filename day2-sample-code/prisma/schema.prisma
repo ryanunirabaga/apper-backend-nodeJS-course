@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+// book belongs to one author
+model Book {
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt 
+
+  title       String
+  subtitle    String // you can add '?' to enable null values
+  published   DateTime
+  publisher   String
+  pages       Int
+  description String
+  website     String
+
+  authorId    Int
+  author      Author    @relation("AuthorBooks", fields: [authorId], references: [id])
+}
+// createdAt and updatedAt usually used for filtering,
+// so always add the attributes as a habit
+
+// author can have many books
+model Author {
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  firstName   String
+  lastName    String
+
+  books       Book[]    @relation("AuthorBooks")
+}
