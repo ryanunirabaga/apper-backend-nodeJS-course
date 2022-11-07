@@ -26,7 +26,7 @@ booksRouter.get("/books/:bookId", async (request, response) => {
             id: Number.parseInt(bookId),
         },
     })
-    response.send({ data: book, message: book ? 'ok': 'not found'});
+    response.send({ data: book, message: book ? 'ok': 'book not found'});
 
 })
 
@@ -154,7 +154,7 @@ booksRouter.delete("/books/:bookId", async (request, response) => {
             },
         });
     
-        response.send({data: deleteBook, message: 'deletion success!'});
+        response.send({data: deleteBook, message: 'delete success!'});
     }
     catch {
         response.send({data: null, message: 'resource not found!'});
