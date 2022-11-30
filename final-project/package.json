@@ -1,8 +1,7 @@
 {
-  "name": "day2-sample-code",
+  "name": "apper-backend-final-project",
   "version": "1.0.0",
   "type": "module",
-  "description": "day2 code sample",
   "main": "index.js",
   "prisma": {
     "seed": "node ./prisma/seed.js"
@@ -11,10 +10,11 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js"
   },
-  "author": "nokoribi",
+  "author": "Ryan Baga",
   "license": "ISC",
+  "description": "Ryan backend final project",
   "dependencies": {
-    "@prisma/client": "^4.5.0",
+    "@prisma/client": "^4.6.1",
     "bcrypt": "^5.1.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -23,7 +23,7 @@
     "express-validator": "^6.14.2",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
-    "prisma": "^4.5.0"
+    "prisma": "^4.6.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"

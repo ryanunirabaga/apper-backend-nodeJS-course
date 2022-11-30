@@ -3,6 +3,7 @@ import pick from "lodash/pick.js";
 import omit from "lodash/omit.js"
 import bcrypt from "bcrypt";
 import { body, validationResult } from "express-validator";
+import jwt from "jsonwebtoken";
 
 const authRouter = express.Router();
 const SALT_ROUNDS = 10;
@@ -15,8 +16,55 @@ POST /sign-out
 */
 
 // GET /me
-authRouter.get("/me", (request, response) => {
-    response.send({ data: null, message: "ok" });
+authRouter.get("/me", async (request, response) => {
+
+    const cookies = request.cookies;
+    const jwtSession = cookies.sessionId;
+
+    // check if user have jwt session
+    if (!jwtSession) {
+        response.status(401).json({
+            data: null,
+            message: "not authenticated"
+        });
+
+        return;
+    }
+
+    // verify jwt if valid
+    try {
+        const jwtSessionObject = await jwt.verify(
+            jwtSession,
+            process.env.JWT_SECRET
+        );
+        const userId = jwtSessionObject.uid;
+
+        const user = await request.app.locals.prisma.user.findUnique({
+            where: {
+                id: userId,
+            }
+        });
+
+        const filteredUser = omit(
+            user,
+            ["id", "password"]
+        );
+
+        response.send({
+            user: filteredUser,
+            message: filteredUser ? "ok" : "error"
+        });
+    }
+    catch {
+        response.status(401).json({
+            data: null,
+            message: "jwt is not valid"
+        });
+    }
+
+
+    // console.log(jwtSession)
+    // response.send({ data: jwtSession, message: "ok" });
 })
 
 // POST /sign-up
@@ -35,6 +83,36 @@ authRouter.post("/sign-up", async (request, response) => {
     const user = await request.app.locals.prisma.user.create({
         data: filteredBody,
     });
+
+    // don't put unnecessary details in JWT Session, especially sensitive info
+    const jwtSessionObject = {
+        uid: user.id,
+        email: user.email
+    };
+
+    const maxAge = 1 * 24 * 60 * 60;
+
+    const jwtSession = await jwt.sign(
+        jwtSessionObject,
+        process.env.JWT_SECRET,
+        {
+            expiresIn: maxAge, // expiry of JWT session
+        }
+    );
+
+    // console.log(jwtSession);
+
+    response.cookie(
+        "sessionId",
+        jwtSession,
+        {
+            httpOnly: true,
+            maxAge: maxAge * 1000,
+            sameSite: "lax",
+            secure: process.env.NODE_ENV === "production" ? true : false,
+        }   
+    );
+
 
     response.send({ data: user, message: user? "ok" : "error" });
 })
@@ -95,13 +173,55 @@ authRouter.post("/sign-in",
             return;
         };
         // use omit to remove the following field(s) to return
-        const filtereduser = omit(user, ["id", "password"]);
+        const filteredUser = omit(user, ["id", "password"]);
 
-        response.send({ data: filtereduser, message: "ok"})
+        // don't put unnecessary details in JWT Session, especially sensitive info
+        const jwtSessionObject = {
+            uid: user.id,
+            email: user.email
+        };
+
+        const maxAge = 1 * 24 * 60 * 60;
+
+        const jwtSession = await jwt.sign(
+            jwtSessionObject,
+            process.env.JWT_SECRET,
+            {
+                expiresIn: maxAge, // expiry of JWT session
+            }
+        );
+
+        // console.log(jwtSession);
+
+        response.cookie(
+            "sessionId",
+            jwtSession,
+            {
+                httpOnly: true,
+                maxAge: maxAge * 1000,
+                sameSite: "lax",
+                secure: process.env.NODE_ENV === "production" ? true : false,
+            }   
+        );
+
+        response.send({ data: filteredUser, message: "ok"});
     })
 
 // POST /sign-out
-authRouter.get("/me", (request, response) => {
+authRouter.post("/sign-out", (request, response) => {
+
+    const cookies = request.cookies;
+    const jwtSession = cookies.sessionId;
+
+    // expire cookies to log out 
+    response.cookie(
+        "sessionId",
+        jwtSession,
+        {
+            maxAge: 1 // one millisecond
+        }
+    );
+
     response.send({ data: null, message: "ok" });
 })
 
