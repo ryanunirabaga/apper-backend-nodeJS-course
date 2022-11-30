@@ -7,6 +7,7 @@ import authRouter from './routes/auth.js';
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import cors from "cors";
+import userRouter from './routes/user.js';
 // import bookGenreRouter from './routes/bookgenre.js';
 
 // dotenv.config();
@@ -20,6 +21,7 @@ app.locals.prisma = prisma;
 
 const PORT = 3000;
 app.use(authRouter);
+app.use(userRouter);
 // app.use(booksRouter);
 // app.use(authorRouter);
 // app.use(genreRouter);

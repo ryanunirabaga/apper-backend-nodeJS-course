@@ -1,9 +1,9 @@
 import express from 'express';
 import pick from "lodash/pick.js";
-import omit from "lodash/omit.js"
+import omit from "lodash/omit.js";
 import bcrypt from "bcrypt";
 import { body, validationResult } from "express-validator";
-import { Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client';
 import jwt from "jsonwebtoken";
 
 const authRouter = express.Router();
@@ -98,7 +98,7 @@ authRouter.post(
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
                 response.status(400).json({
                     data: null,
-                    message: `${error.meta.target[0].toLowerCase()} already exists!`
+                    error: `${error.meta.target[0].toLowerCase()} already exists!`
                 });
             }
         }
