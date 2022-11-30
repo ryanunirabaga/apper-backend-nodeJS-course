@@ -7,6 +7,22 @@ const userRouter = express.Router();
 
 /* CRUD operations here */
 
+// GET me
+
+userRouter.get("/me", requiresAuth, async (request, response) => {
+
+    const cookies = request.cookies;
+    const jwtSession = cookies.sessionId;
+
+    // gwt user id from session token
+    
+
+    response.send({
+        data: null,
+        message: "ok"
+    });
+})
+
 
 
 
