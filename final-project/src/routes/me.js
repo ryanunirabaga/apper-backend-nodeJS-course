@@ -7,15 +7,16 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import omit from "lodash/omit.js";
 
-const userRouter = express.Router();
+const meRouter = express.Router();
 
 const SALT_ROUNDS = 10;
 
 /* CRUD operations here */
 
 // GET me
-userRouter.get("/me", requiresAuth, async (request, response) => {
+meRouter.get("/me", requiresAuth, async (request, response) => {
 
+    // get session token from cookies
     const cookies = request.cookies;
     const jwtSession = cookies.sessionId;
 
@@ -45,9 +46,81 @@ userRouter.get("/me", requiresAuth, async (request, response) => {
     });
 });
 
+// GET all user's own tweets (default sorted by newest)
+meRouter.get("/me/tweets", requiresAuth, async (request, response) => {
+
+    // get session token from cookies
+    const cookies = request.cookies;
+    const jwtSession = cookies.sessionId;
+
+    // get user id from session token
+    const jwtSessionObject = await jwt.verify(
+        jwtSession,
+        process.env.JWT_SECRET
+    );
+    const userId = jwtSessionObject.uid;
+    
+    // get user details
+    const userTweets = await request.app.locals.prisma.user.findUnique({
+        where: {
+            id: userId
+        },
+        select: {
+            tweets: {
+                orderBy: {
+                    createdAt: "desc"
+                }
+            }
+        },
+    });
+
+    // send HTTP response
+    response.send({
+        data: userTweets.tweets,
+        message: "ok"
+    });
+
+});
+
+// GET all user's own replies (default sorted by newest)
+meRouter.get("/me/replies", requiresAuth, async (request, response) => {
+
+    // get session token from cookies
+    const cookies = request.cookies;
+    const jwtSession = cookies.sessionId;
+
+    // get user id from session token
+    const jwtSessionObject = await jwt.verify(
+        jwtSession,
+        process.env.JWT_SECRET
+    );
+    const userId = jwtSessionObject.uid;
+    
+    // get user details
+    const userReplies = await request.app.locals.prisma.user.findUnique({
+        where: {
+            id: userId
+        },
+        select: {
+            replies: {
+                orderBy: {
+                    createdAt: "desc"
+                }
+            }
+        },
+    });
+
+    // send HTTP response
+    response.send({
+        data: userReplies.replies,
+        message: "ok"
+    });
+
+});
+
 // change username
-userRouter.put(
-    "/me/change/username",
+meRouter.put(
+    "/me/change-username",
     [
         body("userName").notEmpty().withMessage("new username is required.")
     ],
@@ -85,7 +158,9 @@ userRouter.put(
                 data: filteredBody,
             });
 
+            // remove id and password in response data
             const filteredUser = omit(updatedUser, ["id","password"]);
+
             // send HTTP response
             response.send({
                 data: filteredUser,
@@ -103,8 +178,8 @@ userRouter.put(
 );
 
 // change password
-userRouter.put(
-    "/me/change/password",
+meRouter.put(
+    "/me/change-password",
     [
         body("oldPassword").notEmpty().withMessage("old password is required."),
         body("newPassword").notEmpty().withMessage("new password is required.")
@@ -172,7 +247,7 @@ userRouter.put(
             },
         });
 
-        // 
+        // remove id and password in response data
         const filteredUser = omit(updatedUser,["id","password"]);
 
         // send HTTP response
@@ -183,7 +258,59 @@ userRouter.put(
     }
 );
 
+// change bio
+meRouter.put(
+    "/me/change-bio",
+    [
+        body("bio").notEmpty().withMessage("bio is required.")
+    ],
+    requiresAuth,
+    async (request, response) => {
+
+        // validate request body
+        const errors = validationResult(request);
+        if (!errors.isEmpty()) {
+            response.status(400).json(
+                { errors: errors.array() }
+            );
+            return;
+        };
+
+        // filter request body
+        const filteredBody = pick(request.body, ["bio"])
+
+        const cookies = request.cookies;
+        const jwtSession = cookies.sessionId;
+
+        // get user id from session token
+        const jwtSessionObject = await jwt.verify(
+            jwtSession,
+            process.env.JWT_SECRET
+        );
+        const userId = jwtSessionObject.uid;
+        
+        // update user's bio in database
+        const updatedUser = await request.app.locals.prisma.user.update({
+            where: {
+                id: userId
+            },
+            data: filteredBody,
+        });
+
+        // remove id and password in response data
+        const filteredUser = omit(updatedUser, ["id","password"]);
+
+        // send HTTP response
+        response.send({
+            data: filteredUser,
+            message: "bio was updated successfully."
+        });
+
+    }
+);
 
 
 
-export default userRouter;
+
+
+export default meRouter;

@@ -1,13 +1,11 @@
 import express from 'express'
 import { PrismaClient } from '@prisma/client';
-// import booksRouter from './routes/book.js';
-// import authorRouter from './routes/author.js';
-// import genreRouter from './routes/genre.js';
 import authRouter from './routes/auth.js';
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import cors from "cors";
-import userRouter from './routes/user.js';
+import meRouter from './routes/me.js';
+import tweetRouter from './routes/tweet.js';
 // import bookGenreRouter from './routes/bookgenre.js';
 
 // dotenv.config();
@@ -21,11 +19,8 @@ app.locals.prisma = prisma;
 
 const PORT = 3000;
 app.use(authRouter);
-app.use(userRouter);
-// app.use(booksRouter);
-// app.use(authorRouter);
-// app.use(genreRouter);
-// app.use(bookGenreRouter);
+app.use(meRouter);
+app.use(tweetRouter);
 
 app.get("/",(request, response) => {
     response.send({message: 'hello, world'});
