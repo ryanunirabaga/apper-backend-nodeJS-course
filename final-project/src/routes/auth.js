@@ -100,6 +100,7 @@ authRouter.post(
                     data: null,
                     error: `${error.meta.target[0].toLowerCase()} already exists!`
                 });
+                return;
             }
         }
     }

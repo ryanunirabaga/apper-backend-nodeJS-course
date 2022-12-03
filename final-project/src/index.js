@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import meRouter from './routes/me.js';
 import tweetRouter from './routes/tweet.js';
+import replyRouter from './routes/reply.js';
+import userRouter from './routes/user.js';
 // import bookGenreRouter from './routes/bookgenre.js';
 
 // dotenv.config();
@@ -21,9 +23,14 @@ const PORT = 3000;
 app.use(authRouter);
 app.use(meRouter);
 app.use(tweetRouter);
+app.use(replyRouter);
+app.use(userRouter);
 
-app.get("/",(request, response) => {
-    response.send({message: 'hello, world'});
+// redirect to 404 if path is non-existent
+app.use((request, response) => {
+    response.status(404).json({
+        error: "Page not found"
+    });
 });
 
 

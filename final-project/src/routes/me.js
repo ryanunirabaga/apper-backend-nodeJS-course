@@ -69,7 +69,7 @@ meRouter.get("/me/tweets", requiresAuth, async (request, response) => {
             tweets: {
                 orderBy: {
                     createdAt: "desc"
-                }
+                },
             }
         },
     });
@@ -113,6 +113,49 @@ meRouter.get("/me/replies", requiresAuth, async (request, response) => {
     // send HTTP response
     response.send({
         data: userReplies.replies,
+        message: "ok"
+    });
+
+});
+
+// GET all user's own tweets and replies to those tweets (default sorted by newest)
+meRouter.get("/me/tweets-and-replies", requiresAuth, async (request, response) => {
+
+    // get session token from cookies
+    const cookies = request.cookies;
+    const jwtSession = cookies.sessionId;
+
+    // get user id from session token
+    const jwtSessionObject = await jwt.verify(
+        jwtSession,
+        process.env.JWT_SECRET
+    );
+    const userId = jwtSessionObject.uid;
+    
+    // get user details
+    const userTweetsAndReplies = await request.app.locals.prisma.user.findUnique({
+        where: {
+            id: userId
+        },
+        select: {
+            tweets: {
+                orderBy: {
+                    createdAt: "desc"
+                },
+                include: {
+                    replies: {
+                        orderBy: {
+                            createdAt: "desc"
+                        }
+                    }
+                }
+            },
+        },
+    });
+
+    // send HTTP response
+    response.send({
+        data: userTweetsAndReplies,
         message: "ok"
     });
 

@@ -33,7 +33,7 @@ model Tweet {
 
   content                 String
   userId                  Int
-  user                    User                          @relation("userTweet", fields: [userId], references: [id])
+  user                    User                          @relation("userTweet", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   replies                 Reply[]                       @relation("tweetReply")
 }
 
@@ -43,8 +43,8 @@ model Reply {
   updatedAt               DateTime                      @updatedAt
 
   tweetId                 Int
-  tweet                   Tweet                         @relation("tweetReply", fields: [tweetId], references: [id])
+  tweet                   Tweet                         @relation("tweetReply", fields: [tweetId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId                  Int
-  user                    User                          @relation("userReply", fields: [userId], references: [id])
+  user                    User                          @relation("userReply", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   content                 String
 }
