@@ -24,6 +24,9 @@ model User {
   bio                     String?
   tweets                  Tweet[]                       @relation("userTweet")
   replies                 Reply[]                       @relation("userReply") 
+  favorites               Favorite[]                    @relation("userfavorites")
+  following               Follow[]                      @relation("userFollowing")
+  followers               Follow[]                      @relation("userFollowers")
 }
 
 model Tweet {
@@ -35,6 +38,7 @@ model Tweet {
   userId                  Int
   user                    User                          @relation("userTweet", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   replies                 Reply[]                       @relation("tweetReply")
+  favorites               Favorite[]                    @relation("tweetfavorites")
 }
 
 model Reply {
@@ -47,4 +51,28 @@ model Reply {
   userId                  Int
   user                    User                          @relation("userReply", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   content                 String
+}
+
+model Favorite {
+  createdAt               DateTime                      @default(now())
+  updatedAt               DateTime                      @updatedAt
+
+  tweetId                 Int
+  tweet                   Tweet                         @relation("tweetfavorites", fields: [tweetId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId                  Int
+  user                    User                          @relation("userfavorites", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  
+  @@id([tweetId, userId])
+}
+
+model Follow {
+  createdAt               DateTime                      @default(now())
+  updatedAt               DateTime                      @updatedAt
+
+  followingId             Int
+  User                    User                         @relation("userFollowing", fields: [followingId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  followerId              Int
+  user                    User                          @relation("userFollowers", fields: [followerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  
+  @@id([followingId, followerId])
 }

@@ -40,7 +40,7 @@ tweetRouter.get("/tweets", requiresAuth, async (request, response) => {
 
 // POST a tweet
 tweetRouter.post(
-    "/tweets",
+"/tweets",
     [
         body("content")
         .notEmpty()
@@ -95,6 +95,14 @@ tweetRouter.delete("/tweets/:tweetId", requiresAuth, async (request, response) =
     // get tweetId from parameter
     const tweetId = Number.parseInt(request.params.tweetId);
 
+    // check param if a number
+    if (isNaN(tweetId)) {
+        response.status(400).json({
+            error: "Invalid parameter!"
+        });
+        return;
+    }
+
     // get session token from cookies
     const cookies = request.cookies;
     const jwtSession = cookies.sessionId;
@@ -142,6 +150,123 @@ tweetRouter.delete("/tweets/:tweetId", requiresAuth, async (request, response) =
         data: deleteTweet,
         message: "tweet was deleted successfully!"
     });
+});
+
+// favorite a tweet
+tweetRouter.post("/tweets/:tweetId/add-to-favorites", requiresAuth, async (request, response) => {
+
+    // get tweetId from parameter
+    const tweetId = request.params.tweetId;
+
+    // check param if a number
+    if (isNaN(tweetId)) {
+        response.status(400).json({
+            error: "Invalid parameter!"
+        });
+        return;
+    }
+    
+    // get session token from cookies
+    const cookies = request.cookies;
+    const jwtSession = cookies.sessionId;
+
+    // get user id from session token
+    const jwtSessionObject = await jwt.verify(
+        jwtSession,
+        process.env.JWT_SECRET
+    );
+    const userId = jwtSessionObject.uid;
+    
+    // get tweet
+    const tweet = await request.app.locals.prisma.tweet.findUnique({
+        where: {
+            id: Number.parseInt(tweetId)
+        }
+    });
+
+    // check tweet is existing
+    if (!tweet) {
+        response.status(404).json({
+            data: null,
+            message: "Resource not found!"
+        });
+        return;
+    }
+
+    try {
+        // add tweet as a favorite to database
+        const favoriteTweet = await request.app.locals.prisma.favorite.create({
+            data: {
+                userId: userId,
+                tweetId: Number.parseInt(tweetId)
+            }
+        })
+
+        // send HTTP response
+        response.send({
+            data: favoriteTweet,
+            message: "Tweet was successfully added to favorites!"
+        });       
+        }
+    catch {
+        // send HTTP error response
+        response.status(400).json({
+            error: "This tweet is already on your favorites!"
+        }); 
+    }
+
+});
+
+// unfavorite a tweet
+tweetRouter.delete("/tweets/:tweetId/remove-from-favorites", requiresAuth, async (request, response) => {
+
+    // get tweetId from parameter
+    const tweetId = request.params.tweetId;
+
+    // check param if a number
+    if (isNaN(tweetId)) {
+        response.status(400).json({
+            error: "Invalid parameter!"
+        });
+        return;
+    }
+    
+    // get session token from cookies
+    const cookies = request.cookies;
+    const jwtSession = cookies.sessionId;
+
+    // get user id from session token
+    const jwtSessionObject = await jwt.verify(
+        jwtSession,
+        process.env.JWT_SECRET
+    );
+    const userId = jwtSessionObject.uid;
+
+    try {
+        // delete favorite to database
+        const deletedFavorite = await request.app.locals.prisma.favorite.delete({
+            where: {
+                tweetId_userId: {
+                    tweetId: Number.parseInt(tweetId),
+                    userId: userId
+                }
+            }
+        });
+
+        // send HTTP response
+        response.send({
+            data: deletedFavorite,
+            message: "Tweet was successfully removed from favorites!"
+        });       
+        }
+    catch {
+        // send HTTP error response
+        response.status(404).json({
+            data: null,
+            error: "Resource not found!"
+        }); 
+    }
+
 });
 
 export default tweetRouter;
