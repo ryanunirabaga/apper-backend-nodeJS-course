@@ -243,7 +243,7 @@ tweetRouter.delete("/tweets/:tweetId/remove-from-favorites", requiresAuth, async
     const userId = jwtSessionObject.uid;
 
     try {
-        // delete favorite to database
+        // remove favorite to database
         const deletedFavorite = await request.app.locals.prisma.favorite.delete({
             where: {
                 tweetId_userId: {

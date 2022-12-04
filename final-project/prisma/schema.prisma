@@ -70,9 +70,9 @@ model Follow {
   updatedAt               DateTime                      @updatedAt
 
   followingId             Int
-  User                    User                         @relation("userFollowing", fields: [followingId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  following               User                          @relation("userFollowing", fields: [followingId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   followerId              Int
-  user                    User                          @relation("userFollowers", fields: [followerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  follower                User                          @relation("userFollowers", fields: [followerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   
   @@id([followingId, followerId])
 }
