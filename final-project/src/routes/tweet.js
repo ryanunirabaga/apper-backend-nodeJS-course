@@ -13,6 +13,7 @@ tweetRouter.get("/tweets", requiresAuth, async (request, response) => {
     
     const allTweets = await request.app.locals.prisma.tweet.findMany({
         select: {
+            id: true,
             user: {
                 select:{
                     userName: true
@@ -26,14 +27,27 @@ tweetRouter.get("/tweets", requiresAuth, async (request, response) => {
                             userName: true
                         }
                     },
-                    content: true
+                    content: true,
+                    id: true
                 }
             }
         }
     });
 
+    // clean output data
+    const mappedTweet = allTweets.map((tweet) => ({
+        id: tweet.id,
+        username: tweet.user.userName,
+        content: tweet.content,
+        replies: tweet.replies.map((reply) => ({
+            id: reply.id,
+            username: reply.user.userName,
+            content: reply.content
+        })) || null
+    }));
+
     response.send({
-        data: allTweets,
+        data: mappedTweet,
         message: "ok"
     });
 });
@@ -199,6 +213,13 @@ tweetRouter.post("/tweets/:tweetId/add-to-favorites", requiresAuth, async (reque
             data: {
                 userId: userId,
                 tweetId: Number.parseInt(tweetId)
+            },
+            include: {
+                tweet: {
+                    select: {
+                        content: true
+                    }
+                }
             }
         })
 

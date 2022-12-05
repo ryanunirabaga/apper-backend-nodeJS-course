@@ -22,8 +22,27 @@ authRouter.post(
         body("userName").notEmpty().withMessage("username is required."),
         body("email").notEmpty().isEmail().normalizeEmail().withMessage("email is required."),
         body("password").notEmpty().withMessage("password is required."),
-        body("birthday").notEmpty().toDate().withMessage("birthday is required."),
-        body("bio").notEmpty()/* .optional({checkFalsy: true}) */
+        body("birthday")
+        .notEmpty()
+        .custom(val => {
+            const date = new Date(val);
+
+            // check input date if invalid
+            if (date == "Invalid Date")
+                throw new Error("Invalid date!");
+            
+            // get age
+            const ageDate = new Date(Date.now() - date.getTime())
+            const age = ageDate.getFullYear()-1970;
+
+            // check age if less than 18
+            if (age < 18)
+                throw new Error("Age below 18 can't sign-up!")
+
+            // return date if valid
+            return date;
+        }),
+        body("bio").notEmpty()
     ],
     async (request, response) => {
 

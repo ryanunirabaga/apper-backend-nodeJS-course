@@ -7,6 +7,7 @@ import cors from "cors";
 import tweetRouter from './routes/tweet.js';
 import replyRouter from './routes/reply.js';
 import userRouter from './routes/user.js';
+import meRouter from './routes/me.js';
 // import bookGenreRouter from './routes/bookgenre.js';
 
 // dotenv.config();
@@ -20,6 +21,7 @@ app.locals.prisma = prisma;
 
 const PORT = 3000;
 app.use(authRouter);
+app.use(meRouter);
 app.use(userRouter);
 app.use(tweetRouter);
 app.use(replyRouter);
